@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'users',
     'crispy_forms',
     'crispy_bootstrap5',
+    'channels'
 ]
 
 MIDDLEWARE = [
@@ -53,6 +54,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'core.middleware.EmailVerificationRequiredMiddleware'
 ]
+
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 ROOT_URLCONF = 'simba_auction.urls'
 
@@ -74,6 +82,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'simba_auction.wsgi.application'
+ASGI_APPLICATION = 'simba_auction.routing.application'
 
 
 # Database

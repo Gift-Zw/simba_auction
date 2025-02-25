@@ -17,3 +17,8 @@ class AuctionForm(forms.Form):
     auction_end = forms.DateTimeField(
         widget=forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}))
     cover_image = forms.ImageField(required=True, widget=forms.ClearableFileInput(attrs={'class': 'form-control'}))
+
+
+class BidForm(forms.Form):
+    bid_amount = forms.DecimalField(max_digits=12, decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': 'form-control'}))

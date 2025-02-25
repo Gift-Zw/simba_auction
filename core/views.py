@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.shortcuts import render, redirect
 from django.db import transaction
 from django.contrib.auth import login, authenticate, logout
@@ -10,10 +10,12 @@ from django.core.mail import send_mail
 
 from users.forms import BuyerRegistrationForm, CompanyRegistrationForm, VerifyAccountForm, LoginForm
 from users.models import CompanyProfile
-from .models import CustomUser, BuyerProfile, AuctionListing, Category
-from .utils import generate_otp_code, send_otp_email
+from .models import CustomUser, BuyerProfile, AuctionListing, Category, Bid
+from .utils import generate_otp_code, send_otp_email, send_outbid_email_html, send_winner_email_html
 from .decorators import buyer_required, company_required
-from .forms import AuctionForm
+from .forms import AuctionForm, BidForm
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 
 # Create your views here.
@@ -203,6 +205,80 @@ def buyer_bid_history_view(request):
 
 
 @buyer_required
+def buyer_auction_detail_view(request, auction_id):
+    # Example: enforce user is buyer with a decorator or logic
+    buyer_profile = BuyerProfile.objects.get(user=request.user)
+
+    auction = get_object_or_404(AuctionListing, pk=auction_id)
+    recent_bids = Bid.objects.filter(auction_listing=auction).order_by('-created_at')[:10]
+
+    # If user POSTs a new bid
+    if request.method == 'POST':
+        form = BidForm(request.POST)
+        if form.is_valid():
+            bid_amount = form.cleaned_data['bid_amount']
+
+            if not auction.is_active:
+                messages.error(request, "This auction has ended.")
+                return redirect('buyer-auction-detail', auction_id=auction.id)
+
+            min_required = auction.current_price + auction.bid_increment
+            if bid_amount < min_required:
+                messages.error(request, f"Your bid must be at least ${min_required}.")
+                return redirect('buyer-auction-detail', auction_id=auction.id)
+
+            # Create the new bid
+            new_bid = Bid.objects.create(
+                user=buyer_profile,
+                auction_listing=auction,
+                bid_amount=bid_amount
+            )
+            auction.current_price = bid_amount
+            auction.save()
+
+            # Outbid logic: find the previous highest (the second-highest now)
+            top_bids = Bid.objects.filter(auction_listing=auction).order_by('-bid_amount')[:2]
+            if len(top_bids) == 2:
+                previous_highest = top_bids[1]
+                if not previous_highest:
+                    previous_highest.is_outbid_notification_sent = True
+                    previous_highest.save()
+                    # Email them
+                    outbid_user_email = previous_highest.user.user.email
+                    full_name = f"{previous_highest.user.user.first_name} {previous_highest.user.user.last_name}"
+                    send_outbid_email_html(
+                        to_email=outbid_user_email,
+                        auction_title=auction.title,
+                        new_bid_amount=bid_amount,
+                        fullname=full_name
+                    )
+
+            # Broadcast to WebSocket
+            channel_layer = get_channel_layer()
+            group_name = f"auction_{auction.id}"
+            async_to_sync(channel_layer.group_send)(
+                group_name,
+                {
+                    "type": "new.bid",
+                    "bid_amount": str(bid_amount),
+                    "user_email": request.user.email,
+                }
+            )
+
+            messages.success(request, "Your bid has been placed successfully.")
+            return redirect('buyer-auction-detail', auction_id=auction.id)
+    else:
+        form = BidForm()
+
+    context = {
+        'auction': auction,
+        'recent_bids': recent_bids,
+        'form': form,
+    }
+    return render(request, 'bidder/auction_detail.html', context)
+
+
+@buyer_required
 def buyer_listings(request):
     # 1) Get search query and category filter from GET parameters
     search_query = request.GET.get('search', '')
@@ -311,6 +387,53 @@ def company_auctions_view(request):
         'auctions': auctions,
     }
     return render(request, 'company/my_auctions.html', context)
+
+
+def company_auction_detail_view(request, auction_id):
+    # Ensure this is the company's listing
+    auction = get_object_or_404(
+        AuctionListing,
+        pk=auction_id,
+        company=CompanyProfile.objects.get(user=request.user),
+    )
+    recent_bids = Bid.objects.filter(auction_listing=auction).order_by('-created_at')[:10]
+    total_bids = auction.bids.count()
+    unique_bidders_count = auction.bids.values('user').distinct().count()
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'end_auction':
+            if auction.is_active:
+                auction.is_active = False
+                auction.save()
+
+                # Highest bid
+                highest_bid = auction.bids.order_by('-bid_amount').first()
+                if highest_bid:
+                    # Mark the winner
+                    auction.winner = highest_bid.user.user  # BuyerProfile -> .user
+                    auction.save()
+
+                    # Send winner email
+                    full_name = f"{highest_bid.user.user.first_name} {highest_bid.user.user.last_name}"
+                    send_winner_email_html(
+                        to_email=highest_bid.user.user.email,
+                        auction_title=auction.title,
+                        fullname=full_name
+                    )
+
+                messages.success(request, f"Auction '{auction.title}' has been ended.")
+            else:
+                messages.info(request, "This auction is already inactive.")
+            return redirect('company-auction-detail', auction_id=auction.id)
+
+    context = {
+        'auction': auction,
+        'recent_bids': recent_bids,
+        'total_bids': total_bids,
+        'unique_bidders_count': unique_bidders_count,
+    }
+    return render(request, 'company/auction_detail.html', context)
 
 
 @company_required

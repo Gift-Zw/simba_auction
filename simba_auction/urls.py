@@ -37,6 +37,10 @@ urlpatterns = [
     path('verify-account/', views.verify_account_view, name='verify_account'),
     path('login/', views.user_login_view, name='user-login'),
     path('logout/', views.user_logout_view, name='user-logout'),
+    path('auction/<int:auction_id>/', views.buyer_auction_detail_view, name='buyer-auction-detail'),
+
+    # Company detail
+    path('company/auction/<int:auction_id>/', views.company_auction_detail_view, name='company-auction-detail'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

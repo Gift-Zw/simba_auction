@@ -58,7 +58,7 @@
                 <div class="card shadow mb-4">
                   <div class="card-body">
                     <div class="text-center">
-                      <a href="">
+                      <a href="{% url 'buyer-auction-detail' auction.id %}">
                         {% if auction.cover_image %}
                           <img width="140" height="120" src="{{ auction.cover_image.url }}" alt="{{ auction.title }}">
                         {% else %}
@@ -69,7 +69,7 @@
                     <div class="card-text my-2">
                       <strong class="card-title my-0">
                         <!-- Link to detail view -->
-                        <a href="">
+                        <a href="{% url 'buyer-auction-detail' auction.id %}">
                           {{ auction.title }}
                         </a>
                       </strong>
@@ -114,7 +114,7 @@
                       </div>
                       <div class="col-auto">
                         <!-- If you want a button or link, e.g. "Bid Now" -->
-                       <a href="" class="btn btn-sm btn-info">Bid Now</a> 
+                       <a href="{% url 'buyer-auction-detail' auction.id %}" class="btn btn-sm btn-info">Bid Now</a> 
                       </div>
                     </div>
                   </div> <!-- /.card-footer -->

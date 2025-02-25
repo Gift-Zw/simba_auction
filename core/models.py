@@ -46,7 +46,6 @@ class AuctionListing(TimeStampedModel):
         if timezone.now() >= self.auction_end and self.is_active:
             self.is_active = False
             self.save()
-            # TODO: Determine the highest bid, set the winner, and trigger notifications.
 
 
 class Picture(TimeStampedModel):
@@ -81,6 +80,7 @@ class Bid(TimeStampedModel):
     user = models.ForeignKey(BuyerProfile, on_delete=models.CASCADE, related_name='bids')
     auction_listing = models.ForeignKey(AuctionListing, on_delete=models.CASCADE, related_name='bids')
     bid_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    is_outbid_notification_sent = models.BooleanField(default=False)
 
 
     def __str__(self):

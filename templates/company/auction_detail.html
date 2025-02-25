@@ -1,0 +1,114 @@
+{% extends 'company/base.html' %}
+{% load static %}
+{% block content %}
+<div class="wrapper">
+  <main role="main" class="main-content">
+    {% include 'company/navbar.html' %}
+    <div class="container-fluid">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="col-12 mb-4">
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="row">
+        <div class="col-md-8">
+          <!-- Auction Overview -->
+          <div class="card shadow mb-4">
+            <div class="card-body">
+              <div class="row align-items-center">
+                <div class="col-md-4 text-center">
+                  {% if auction.cover_image %}
+                    <img src="{{ auction.cover_image.url }}" class="img-fluid rounded" alt="Cover Image">
+                  {% else %}
+                    <img src="{% static 'assets/avatars/face-4.jpg' %}" class="img-fluid rounded" alt="No Image">
+                  {% endif %}
+                </div>
+                <div class="col-md-8">
+                  <h3 class="card-title mb-1">{{ auction.title }}</h3>
+                  <p class="small text-muted mb-1">
+                    Condition:
+                    {% if auction.condition %}
+                      <span class="badge badge-success">{{ auction.condition|upper }}</span>
+                    {% else %}
+                      <span class="badge badge-secondary">UNKNOWN</span>
+                    {% endif %}
+                  </p>
+                  <p class="small text-muted mb-1">Category: {{ auction.category|default:"N/A" }}</p>
+                  <p class="small text-muted mb-1">Location: {{ auction.location|default:"N/A" }}</p>
+                  <p class="mb-2 text-muted">{{ auction.description }}</p>
+                  <hr>
+                  <h5>Starting Price: ${{ auction.starting_price }}</h5>
+                  <h5>Current Price: ${{ auction.current_price }}</h5>
+                  <p class="small text-muted">
+                    Starts: {{ auction.auction_start|date:"M d, Y g:i a" }} |
+                    Ends: {{ auction.auction_end|date:"M d, Y g:i a" }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- End Auction / Edit Auction (if active) -->
+          {% if auction.is_active %}
+            <form method="POST">
+              {% csrf_token %}
+              <button type="submit" name="action" value="end_auction" class="btn btn-danger">
+                End Auction Early
+              </button>
+            </form>
+          {% else %}
+            <div class="alert alert-warning">
+              This auction is closed or inactive.
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Recent Bids & Stats -->
+        <div class="col-md-4">
+          <div class="card shadow mb-4">
+            <div class="card-header">
+              <strong>Recent Bids</strong>
+            </div>
+            <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+              {% for bid in recent_bids %}
+                <div class="pb-3 timeline-item item-primary">
+                  <div class="pl-5">
+                    <div class="mb-1">
+                      <strong>{{ bid.user.user.email }}</strong>
+                      <span class="text-muted small mx-2">bid ${{ bid.bid_amount }}</span>
+                    </div>
+                    <p class="small text-muted">
+                      {{ bid.created_at|date:"M d, Y g:i a" }}
+                    </p>
+                  </div>
+                </div>
+              {% empty %}
+                <p class="text-muted">No bids yet.</p>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="card shadow mb-4">
+            <div class="card-header">
+              <strong>Auction Stats</strong>
+            </div>
+            <div class="card-body">
+              <p class="small text-muted mb-1">Total Bids: <strong>{{ total_bids }}</strong></p>
+              <p class="small text-muted mb-3">Unique Bidders: <strong>{{ unique_bidders_count }}</strong></p>
+            </div>
+          </div>
+        </div> <!-- /.col-md-4 -->
+
+      </div> <!-- /.row -->
+    </div> <!-- /.container-fluid -->
+  </main>
+</div>
+{% endblock content %}
