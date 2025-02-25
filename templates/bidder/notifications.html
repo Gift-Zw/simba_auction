@@ -1,0 +1,92 @@
+{% extends 'bidder/base.html' %}
+{% load static %}
+{% block content %}
+<div class="wrapper">
+  <main role="main" class="main-content">
+    {% include 'bidder/navbar.html' %}
+
+    <div class="container-fluid">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="col-12 mb-4">
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" style="text-color:blue" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+      <div class="row justify-content-center">
+        <div class="col-12">
+          <h2 class="mb-2 page-title">Your Notifications</h2>
+          <p class="card-text">Below is a list of notifications sent to your account.</p>
+
+          <div class="row my-4">
+            <!-- Small table -->
+            <div class="col-md-12">
+              <div class="card shadow">
+                <div class="card-body">
+                  <table class="table datatables" id="notificationsTable">
+                    <thead>
+                      <tr>
+                        <th><strong>#</strong></th>
+                        <th><strong>Message</strong></th>
+                        <th><strong>Notification Type</strong></th>
+                        <th><strong>Created At</strong></th>
+                          <th><strong>Updated At</strong></th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbody">
+                      {% for notification in notifications %}
+                        <tr>
+                          <td>{{ forloop.counter }}</td>
+                          <td>{{ notification.message }}</td>
+                          <td>{{ notification.notification_type }}</td>
+                          <td>{{ notification.created_at }}</td>
+                          <td>{{ notification.updated_at }}</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div> <!-- .col-md-12 -->
+          </div> <!-- .row my-4 -->
+        </div> <!-- .col-12 -->
+      </div> <!-- .row justify-content-center -->
+    </div> <!-- .container-fluid -->
+  </main> <!-- main -->
+</div>
+
+<!-- Include your necessary JS files -->
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/popper.min.js' %}"></script>
+<script src="{% static 'js/moment.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/simplebar.min.js' %}"></script>
+<script src='{% static 'js/daterangepicker.js' %}'></script>
+<script src='{% static 'js/jquery.stickOnScroll.js' %}'></script>
+<script src="{% static 'js/tinycolor-min.js' %}"></script>
+<script src="{% static 'js/config.js' %}"></script>
+<script src='{% static 'js/jquery.dataTables.min.js' %}'></script>
+<script src='{% static 'js/dataTables.bootstrap4.min.js' %}'></script>
+<script>
+  $('#notificationsTable').DataTable({
+    autoWidth: true,
+    "lengthMenu": [
+      [16, 32, 64, -1],
+      [16, 32, 64, "All"]
+    ]
+  });
+</script>
+<script src="{% static 'js/apps.js' %}"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'UA-56159088-1');
+</script>
+{% endblock content %}

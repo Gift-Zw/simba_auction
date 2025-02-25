@@ -1,0 +1,106 @@
+{% extends 'bidder/base.html' %}
+{% load static %}
+{% block content %}
+<div class="wrapper">
+ <main role="main" class="main-content">
+     {% include 'bidder/navbar.html' %}
+        <div class="container-fluid">
+                  {% if messages %}
+        {% for message in messages %}
+          <div class="col-12 mb-4">
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" style="text-color:blue" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+          <div class="row justify-content-center">
+            <div class="col-12">
+              <div class="row align-items-center my-4">
+                <div class="col">
+                  <h2 class="h3 mb-0 page-title">Watchlist</h2>
+                    <p>This is a list of the listings you have added to your watchlist</p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-3">
+                  <div class="card shadow mb-4">
+                    <div class="card-body ">
+                      <div class=" mt-4 text-center">
+                        <a href="">
+                          <img width="140px" height="120px" src="{% static 'assets/avatars/face-4.jpg' %}" alt="...">
+                        </a>
+                      </div>
+                      <div class="card-text my-2">
+                        <strong class="card-title my-0">Bass Wendy </strong>
+                        <p class="small text mt-1 mb-1">Condition:<span class="badge badge-success">NEW</span></p>
+                          <p class="small text mb-1">Category: <span><strong>Motor Vehicles</strong></span></p>
+                          <p class="small text mb-1">Location: <span><strong>Harare</strong></span></p>
+                          <p class="small text mb-1">Starting Price: <span><strong>$30.00</strong></span></p>
+                          <p class="small text mb-1">Starting Date: <span><strong>9 July 2024</strong></span></p>
+                          <p class="small text mb-0">Ending Date: <span><strong>10 July 2025</strong></span></p>
+                      </div>
+                    </div> <!-- ./card-text -->
+                    <div class="card-footer">
+                      <div class="row align-items-center justify-content-between">
+                        <div class="col-auto">
+                          <small>
+                              <strong>Current Bid: $45.00 </strong></small>
+                        </div>
+                        <div class="col-auto">
+
+                        </div>
+                      </div>
+                    </div> <!-- /.card-footer -->
+                  </div>
+                </div> <!-- .col -->
+                <div class="col-md-9">
+                </div> <!-- .col -->
+              </div> <!-- .row -->
+              <nav aria-label="Table Paging" class="my-3">
+                <ul class="pagination justify-content-end mb-0">
+                  <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                  <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                  <li class="page-item"><a class="page-link" href="#">2</a></li>
+                  <li class="page-item"><a class="page-link" href="#">3</a></li>
+                  <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                </ul>
+              </nav>
+            </div> <!-- .col-12 -->
+          </div> <!-- .row -->
+        </div> <!-- .container-fluid -->
+      </main> <!-- main -->
+</div>
+
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/popper.min.js' %}"></script>
+<script src="{% static 'js/moment.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/simplebar.min.js' %}"></script>
+<script src='{% static 'js/daterangepicker.js' %}'></script>
+<script src='{% static 'js/jquery.stickOnScroll.js' %}'></script>
+<script src="{% static 'js/tinycolor-min.js' %}"></script>
+<script src="{% static 'js/config.js' %}"></script>
+<script src='{% static 'js/jquery.dataTables.min.js' %}'></script>
+<script src='{% static 'js/dataTables.bootstrap4.min.js' %}'></script>
+<script>
+  $('#dataTable-1').DataTable({
+    autoWidth: true,
+    "lengthMenu": [
+      [16, 32, 64, -1],
+      [16, 32, 64, "All"]
+    ]
+  });
+</script>
+<script src="{% static 'js/apps.js' %}"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'UA-56159088-1');
+</script>
+{% endblock content %}

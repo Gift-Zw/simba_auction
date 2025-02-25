@@ -1,0 +1,198 @@
+{% extends 'bidder/base.html' %}
+{% load static %}
+{% block content %}
+<div class="wrapper">
+  <main role="main" class="main-content">
+    {% include 'bidder/navbar.html' %}
+    <div class="container-fluid">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="col-12 mb-4">
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" style="text-color:blue" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+      
+      <div class="row justify-content-center">
+        <div class="col-12">
+          <div class="row align-items-center my-4">
+            <div class="col">
+              <h2 class="h3 mb-0 page-title">Available Auctions</h2>
+            </div>
+            <div class="col-auto">
+              <!-- Optional: any extra buttons or actions -->
+            </div>
+          </div>
+
+          <!-- Filter Form (search + category) -->
+          <form method="GET" class="mb-3">
+            <div class="form-row">
+              <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Search..." value="{{ search_query }}">
+              </div>
+              <div class="col-md-4">
+                <select name="category" class="form-control">
+                  <option value="">-- All Categories --</option>
+                  {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:'s' %}selected{% endif %}>
+                      {{ cat }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">Filter</button>
+              </div>
+            </div>
+          </form>
+
+          <div class="row">
+            <!-- Loop over auctions in the current page -->
+            {% for auction in page_obj %}
+              <div class="col-md-3">
+                <div class="card shadow mb-4">
+                  <div class="card-body">
+                    <div class="text-center">
+                      <a href="">
+                        {% if auction.cover_image %}
+                          <img width="140" height="120" src="{{ auction.cover_image.url }}" alt="{{ auction.title }}">
+                        {% else %}
+                          <img width="140" height="120" src="{% static 'assets/avatars/face-4.jpg' %}" alt="Placeholder">
+                        {% endif %}
+                      </a>
+                    </div>
+                    <div class="card-text my-2">
+                      <strong class="card-title my-0">
+                        <!-- Link to detail view -->
+                        <a href="">
+                          {{ auction.title }}
+                        </a>
+                      </strong>
+                      <p class="small text mt-1 mb-1">
+                        Condition:
+                        {% if auction.condition %}
+                          <span class="badge badge-success">{{ auction.condition|upper }}</span>
+                        {% else %}
+                          <span class="badge badge-secondary">UNKNOWN</span>
+                        {% endif %}
+                      </p>
+                      <p class="small text mb-1">
+                        Category:
+                        <strong>
+                          {% if auction.category %}
+                            {{ auction.category }}
+                          {% else %}
+                            None
+                          {% endif %}
+                        </strong>
+                      </p>
+                      <p class="small text mb-1">
+                        Location: <strong>{{ auction.location|default:"N/A" }}</strong>
+                      </p>
+                      <p class="small text mb-1">
+                        Starting Price: <strong>${{ auction.starting_price }}</strong>
+                      </p>
+                      <p class="small text mb-1">
+                        Starting Date: <strong>{{ auction.auction_start|date:"j M Y, g:i a" }}</strong>
+                      </p>
+                      <p class="small text mb-0">
+                        Ending Date: <strong>{{ auction.auction_end|date:"j M Y, g:i a" }}</strong>
+                      </p>
+                    </div>
+                  </div> <!-- ./card-text -->
+                  <div class="card-footer">
+                    <div class="row align-items-center justify-content-between">
+                      <div class="col-auto">
+                        <small>
+                          <strong>Current Bid: ${{ auction.current_price }}</strong>
+                        </small>
+                      </div>
+                      <div class="col-auto">
+                        <!-- If you want a button or link, e.g. "Bid Now" -->
+                       <a href="" class="btn btn-sm btn-info">Bid Now</a> 
+                      </div>
+                    </div>
+                  </div> <!-- /.card-footer -->
+                </div>
+              </div>
+            {% endfor %}
+          </div> <!-- .row -->
+
+          <!-- Pagination -->
+          <nav aria-label="Pagination" class="my-3">
+            <ul class="pagination justify-content-end mb-0">
+              {% if page_obj.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" aria-label="Previous">
+                    <span aria-hidden="true">« Previous</span>
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <a class="page-link" aria-disabled="true">« Previous</a>
+                </li>
+              {% endif %}
+
+              <!-- Page numbers -->
+              {% for i in page_obj.paginator.page_range %}
+                {% if page_obj.number == i %}
+                  <li class="page-item active">
+                    <a class="page-link" href="#">{{ i }}</a>
+                  </li>
+                {% else %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">
+                      {{ i }}
+                    </a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+
+              {% if page_obj.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" aria-label="Next">
+                    <span aria-hidden="true">Next »</span>
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <a class="page-link" aria-disabled="true">Next »</a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div> <!-- .col-12 -->
+      </div> <!-- .row -->
+    </div> <!-- .container-fluid -->
+  </main>
+</div>
+
+<!-- Scripts -->
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/popper.min.js' %}"></script>
+<script src="{% static 'js/moment.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/simplebar.min.js' %}"></script>
+<script src='{% static 'js/daterangepicker.js' %}'></script>
+<script src='{% static 'js/jquery.stickOnScroll.js' %}'></script>
+<script src="{% static 'js/tinycolor-min.js' %}"></script>
+<script src="{% static 'js/config.js' %}"></script>
+<script src='{% static 'js/jquery.dataTables.min.js' %}'></script>
+<script src='{% static 'js/dataTables.bootstrap4.min.js' %}'></script>
+<script>
+  // If you don't need DataTables here, you can remove these lines
+  $('#dataTable-1').DataTable({
+    autoWidth: true,
+    "lengthMenu": [
+      [16, 32, 64, -1],
+      [16, 32, 64, "All"]
+    ]
+  });
+</script>
+<script src="{% static 'js/apps.js' %}"></script>
+{% endblock content %}

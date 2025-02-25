@@ -1,0 +1,184 @@
+{% extends 'company/base.html' %}
+{% load static %}
+{% block content %}
+<div class="wrapper">
+  <main role="main" class="main-content">
+    {% include 'company/navbar.html' %}
+    <div class="container-fluid">
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="col-12 mb-4">
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="row justify-content-center">
+        <div class="col-12">
+          <h2 class="mb-2 page-title"><strong>Company Auctions</strong></h2>
+          <p class="card-text">This table displays the auction listings created by your company.</p>
+
+          <!-- Button to open the modal -->
+          <div class="mb-3 text-right">
+            <button class="btn btn-primary" data-toggle="modal" data-target="#verticalModal">
+              Add New Auction
+            </button>
+          </div>
+
+          <!-- Modal -->
+          <div class="modal fade" id="verticalModal" tabindex="-1" role="dialog" aria-labelledby="verticalModalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="verticalModalTitle">Add New Auction</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <!-- Use multipart/form-data for file upload -->
+                <form method="post" action="{% url 'company_auctions' %}" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <div class="modal-body">
+                    {# Display form errors inside the modal if needed #}
+
+                    <div class="form-group">
+                      <label for="id_title">Auction Title:</label>
+                      {{ form.title }}
+                    </div>
+                      <div class="form-group">
+                      <label for="id_category">Category</label>
+                      {{ form.category }}
+                    </div>
+                    <div class="form-group">
+                      <label for="id_description">Description:</label>
+                      {{ form.description }}
+                    </div>
+                    <div class="form-group">
+                      <label for="id_condition">Condition:</label>
+                      {{ form.condition }}
+                    </div>
+                    <div class="form-group">
+                      <label for="id_location">Location:</label>
+                      {{ form.location }}
+                    </div>
+                    <div class="form-group">
+                      <label for="id_starting_price">Starting Price:</label>
+                      {{ form.starting_price }}
+                    </div>
+                    <div class="form-group">
+                      <label for="id_auction_start">Auction Start:</label>
+                      {{ form.auction_start }}
+                    </div>
+                    <div class="form-group">
+                      <label for="id_auction_end">Auction End:</label>
+                      {{ form.auction_end }}
+                    </div>
+                    <div class="form-group">
+                      <label for="id_cover_image">Cover Image:</label>
+                      {{ form.cover_image }}
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn mb-2 btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn mb-2 btn-primary">Submit</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Auction table below -->
+          <div class="row my-4">
+            <div class="col-md-12">
+              <div class="card shadow">
+                <div class="card-body">
+                  <table class="table datatables" id="dataTable-1">
+                    <thead>
+                      <tr>
+                        <th><strong>#</strong></th>
+                          <th><strong>Cover Image</strong></th>
+                        <th><strong>Auction Title</strong></th>
+                          <th><strong>Category</strong></th>
+                        <th><strong>Condition</strong></th>
+                        <th><strong>Location</strong></th>
+                        <th><strong>Starting Price</strong></th>
+                        <th><strong>Current Price</strong></th>
+
+                        <th><strong>Is Active</strong></th>
+                        <th><strong>Auction Start</strong></th>
+                        <th><strong>Auction End</strong></th>
+                        <th><strong>Created At</strong></th>
+                           <th><strong>Action</strong></th>
+
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for auction in auctions %}
+                        <tr>
+                          <td>{{ forloop.counter }}</td>
+                            <td>
+                            {% if auction.cover_image %}
+                              <img src="{{ auction.cover_image.url }}" alt="Cover Image" width="80" height="80">
+                            {% else %}
+                              No Image
+                            {% endif %}
+                          </td>
+                          <td>{{ auction.title }}</td>
+                        <td>{{ auction.category }}</td> 
+                          <td>{{ auction.condition }}</td>
+                          <td>{{ auction.location }}</td>
+                          <td>${{ auction.starting_price }}</td>
+                        <td>${{ auction.current_price }}</td>
+                          <td>{{ auction.is_active }}</td>
+                          <td>{{ auction.auction_start }}</td>
+                          <td>{{ auction.auction_end }}</td>
+                          <td>{{ auction.created_at }}</td>
+                                                  <td><button class="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="text-muted sr-only">Action</span>
+                              </button>
+                              <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="">View</a>
+                              </div>
+                            </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div> <!-- .col-md-12 -->
+          </div> <!-- .row my-4 -->
+        </div> <!-- .col-12 -->
+      </div> <!-- .row justify-content-center -->
+    </div> <!-- .container-fluid -->
+  </main>
+</div>
+
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/popper.min.js' %}"></script>
+<script src="{% static 'js/moment.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/simplebar.min.js' %}"></script>
+<script src="{% static 'js/daterangepicker.js' %}"></script>
+<script src="{% static 'js/jquery.stickOnScroll.js' %}"></script>
+<script src="{% static 'js/tinycolor-min.js' %}"></script>
+<script src="{% static 'js/config.js' %}"></script>
+<script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'js/dataTables.bootstrap4.min.js' %}"></script>
+<script>
+  $('#dataTable-1').DataTable({
+    autoWidth: true,
+    "lengthMenu": [
+      [16, 32, 64, -1],
+      [16, 32, 64, "All"]
+    ]
+  });
+</script>
+<script src="{% static 'js/apps.js' %}"></script>
+{% endblock content %}
